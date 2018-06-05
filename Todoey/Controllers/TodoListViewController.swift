@@ -14,14 +14,15 @@ class TodoListViewController: UITableViewController {
     
     let defaults = UserDefaults.standard
     
-    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-
+        print(dataFilePath!)
+        
         let newItem1 = Item()
         newItem1.title = "Find Mike"
         itemArray.append(newItem1)
@@ -34,11 +35,15 @@ class TodoListViewController: UITableViewController {
         newItem3.title = "Count stars"
         itemArray.append(newItem3)
         
-        
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
             itemArray = items
         }
+        
+        
+        
+//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+//            itemArray = items
+//        }
 
 
 
@@ -61,12 +66,14 @@ class TodoListViewController: UITableViewController {
         
         cell.textLabel?.text = item.title
      
-
-        
         //Ternery operator (IF statement)
         //value = condition ? valueIfTrue: valueIfFalse
         
         cell.accessoryType = item.done ? .checkmark : .none
+        //Update the Item.plist
+        
+        self.SaveItems()
+        
         
         return cell
         
@@ -84,7 +91,7 @@ class TodoListViewController: UITableViewController {
         
         //Changes the tick toggles on or off at the right location
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-            
+         self.SaveItems()
             
             
         //What to do if the row is selected
@@ -94,6 +101,7 @@ class TodoListViewController: UITableViewController {
         
         else {
         tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+        
         }
     
     
@@ -121,9 +129,7 @@ class TodoListViewController: UITableViewController {
            
             self.itemArray.append(newItem)
             
-            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
-            
-            self.tableView.reloadData()
+           
         }
         
         //Alert box
@@ -138,8 +144,21 @@ class TodoListViewController: UITableViewController {
     }
             
     
+    
+    func SaveItems() {
+        // Set up a Plist encoder variable
+        let encoder = PropertyListEncoder()
         
-        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }
+            
+        catch {
+            print("Encoding the Plist from the item array failed, \(error)")
+        }
+        self.tableView.reloadData()
+    }
     
     
     
